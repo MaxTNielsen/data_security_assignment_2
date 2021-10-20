@@ -4,14 +4,16 @@ import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 
 public class PrinterServant extends UnicastRemoteObject implements IPrinterServant {
+    private DB db;
 
     public PrinterServant() throws RemoteException {
         super();
+        this.db = new DB();
     }
 
     //Test method
     @Override
-    public String echo(String s) throws RemoteException{
+    public String echo(String s) throws RemoteException {
         return "From Server" + s;
     }
 
@@ -31,8 +33,9 @@ public class PrinterServant extends UnicastRemoteObject implements IPrinterServa
     }
 
     @Override
-    public void start(String password) {
-        throw new UnsupportedOperationException("");
+    public Cookie start(String password) {
+        //Authenticate client with password param
+        return new Cookie();
     }
 
     @Override
@@ -59,4 +62,5 @@ public class PrinterServant extends UnicastRemoteObject implements IPrinterServa
     public void setConfig(String parameter, String value) {
         throw new UnsupportedOperationException("");
     }
+
 }
