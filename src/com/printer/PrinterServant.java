@@ -2,9 +2,11 @@ package com.printer;
 
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
+import com.google.gson.Gson;
 
 public class PrinterServant extends UnicastRemoteObject implements IPrinterServant {
     private DB db;
+    private Gson gson = new Gson();
 
     public PrinterServant() throws RemoteException {
         super();
@@ -33,9 +35,14 @@ public class PrinterServant extends UnicastRemoteObject implements IPrinterServa
     }
 
     @Override
-    public Cookie start(String password) {
+    public String start(String password, String username) {
         //Authenticate client with password param
-        return new Cookie();
+        if (db.authenticateUser(password, username))
+            System.out.println("it worked!");
+        else{
+            System.out.println("it didnt work");
+        }
+        return gson.toJson(new Cookie());
     }
 
     @Override

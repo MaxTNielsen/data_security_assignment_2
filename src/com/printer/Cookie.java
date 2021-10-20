@@ -1,15 +1,15 @@
 package com.printer;
 
 public class Cookie {
-    private double id;
+    private String id;
     private long timestamp;
 
     public Cookie(){
-        this.id = Math.random();
+        this.id = String.valueOf(Math.random());
         this.timestamp = System.currentTimeMillis();
     }
 
-    public double getId() {
+    public String getId() {
         return id;
     }
 
