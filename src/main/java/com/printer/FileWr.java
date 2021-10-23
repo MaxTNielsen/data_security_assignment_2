@@ -5,10 +5,18 @@ import java.io.FileWriter;
 import java.io.IOException;
 
 public class FileWr {
-    File file = new File("Hello1.txt");
+    File file = new File("log.txt");
     FileWriter writer;
 
     public FileWr() {
+        try {
+            this.writer = new FileWriter(file);
+        } catch (IOException e) {
+            System.out.println(e.getMessage());
+        }
+    }
+
+    public void setWriter() {
         try {
             file.createNewFile();
             this.writer = new FileWriter(file);

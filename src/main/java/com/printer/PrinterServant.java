@@ -45,8 +45,7 @@ public class PrinterServant extends UnicastRemoteObject implements IPrinterServa
     public boolean authenticateCookie(String cookie) throws RemoteException {
         Cookie c = gson.fromJson(cookie, Cookie.class);
         if (db.authenticateCookie(c)) {
-            if (checkTimeStamp(c))
-                return true;
+            return checkTimeStamp(c);
         }
         return false;
     }
@@ -127,11 +126,7 @@ public class PrinterServant extends UnicastRemoteObject implements IPrinterServa
     @Override
     public boolean checkTimeStamp(Cookie c) throws RemoteException {
         long current = System.currentTimeMillis();
-
-        if (current - c.getTimestamp() > expire_time)
-            return false;
-        return true;
-
+        return current - c.getTimestamp() <= expire_time;
     }
 
     private class printerThreads extends Thread {
@@ -147,30 +142,19 @@ public class PrinterServant extends UnicastRemoteObject implements IPrinterServa
 
         @Override
         public void run() {
-            busy[id] = true;
-            if (getPrinterJobs(printer).size() == 1) {
-                try {
+            try {
+                while (getPrinterJobs(printer).size() > 0) {
+                    busy[id] = true;
                     Thread.sleep(2000);
-                    fw.writeFile(filename + System.getProperty("line.separator"));
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                } finally {
-                    busy[id] = false;
+                    fw.writeFile(getPrinterJobs(printer).get(0) + System.getProperty("line.separator"));
+                    System.out.println("Printing " + filename + "from" + currentThread().getName());
+                    getPrinterJobs(printer).remove(0);
                 }
-            } else {
-                while (getPrinterJobs(printer).size() > 1) {
-                    try {
-                        Thread.sleep(2000);
-                        fw.writeFile(filename + System.getProperty("line.separator"));
-                        getPrinterJobs(printer).remove(0);
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    } finally {
-                        busy[id] = false;
-                    }
-                }
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            } finally {
+                busy[id] = false;
             }
-            busy[id] = false;
         }
     }
 

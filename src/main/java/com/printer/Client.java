@@ -14,8 +14,8 @@ public class Client {
         Cookie cookie = gson.fromJson(printer.start("hello", "user1"), Cookie.class);
         printer.print("file1", "printer0", gson.toJson(cookie));
         printer.print("file2", "printer1", gson.toJson(cookie));
-        //printer.print("file3", "printer0", gson.toJson(cookie));
-        //printer.print("file4", "printer1", gson.toJson(cookie));
+        printer.print("file3", "printer0", gson.toJson(cookie));
+        printer.print("file4", "printer1", gson.toJson(cookie));
         //System.out.println(cookie.toString());
         System.out.println(printer.echo(gson.toJson(cookie)) + " " + printer.getClass().getName());
         printer.stop(gson.toJson(cookie));
