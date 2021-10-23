@@ -5,12 +5,12 @@ import java.rmi.server.UnicastRemoteObject;
 import com.google.gson.Gson;
 
 public class PrinterServant extends UnicastRemoteObject implements IPrinterServant {
-    private DB db;
+    private IDB db;
     private Gson gson = new Gson();
 
-    public PrinterServant() throws RemoteException {
+    public PrinterServant(IDB db) throws RemoteException {
         super();
-        this.db = new DB();
+        this.db = db;
     }
 
     //Test method

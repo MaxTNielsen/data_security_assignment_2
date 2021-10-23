@@ -2,27 +2,25 @@ package com.printer;
 
 import java.sql.*;
 
-public class DB {
+public class DB implements IDB{
 
-    private static final String passUrl = "jdbc:sqlite:C:/sqlite/db/passwords.db";
-    private static final String cookieUrl = "jdbc:sqlite:C:/sqlite/db/cookies.db";
+    private static final String dbUrl = "jdbc:sqlite:C:/sqlite/db/printerDB.db";
 
     public DB() {
-        createNewDatabase(passUrl);
-        createNewDatabase(cookieUrl);
+        createNewDatabase(dbUrl);
 
-        createCookieTable(cookieUrl);
-        createPasswordsTable(passUrl);
+        createCookieTable(dbUrl);
+        createPasswordsTable(dbUrl);
 
-        addPasswordToDb(passUrl, "user1", "hello");
-        addPasswordToDb(passUrl, "user2", "hello");
+        addPasswordToDb(dbUrl, "user1", "hello");
+        addPasswordToDb(dbUrl, "user2", "hello");
     }
 
-    boolean authenticateUser(String pass, String username){
+    public boolean authenticateUser(String pass, String username){
 
         String sql = "SELECT password FROM passwords WHERE password=? AND username=?";
 
-        try(Connection conn = connect(passUrl)){
+        try(Connection conn = connect(dbUrl)){
 
         PreparedStatement psmt = conn.prepareStatement(sql);
         psmt.setString(1,pass);
@@ -39,7 +37,7 @@ public class DB {
         return false;
     }
 
-    void addPasswordToDb(String url, String username, String password) {
+    public void addPasswordToDb(String url, String username, String password) {
         String sql = "INSERT INTO passwords(username,password) VALUES(?,?)";
 
         try (Connection conn = connect(url);
@@ -52,7 +50,7 @@ public class DB {
         }
     }
 
-    private static Connection connect(String url) {
+    public Connection connect(String url) {
         Connection conn = null;
         try {
             conn = DriverManager.getConnection(url);
@@ -62,9 +60,9 @@ public class DB {
         return conn;
     }
 
-    private static void createNewDatabase(String url) {
+    public void createNewDatabase(String url) {
 
-        try (Connection conn = connect(url)) {
+        try (Connection conn = this.connect(url)) {
             if (conn != null) {
                 DatabaseMetaData meta = conn.getMetaData();
                 System.out.println("The driver name is " + meta.getDriverName());
@@ -77,7 +75,7 @@ public class DB {
 
     }
 
-    private static void createPasswordsTable(String url) {
+    public void createPasswordsTable(String url) {
         // SQL statement for creating a new table
         String sql = "CREATE TABLE IF NOT EXISTS passwords (\n"
                 + "	id integer PRIMARY KEY,\n"
@@ -85,7 +83,7 @@ public class DB {
                 + "	password text NOT NULL\n"
                 + ");";
 
-        try (Connection conn = connect(url);
+        try (Connection conn = this.connect(url);
              Statement stmt = conn.createStatement()) {
             // create a new table
             stmt.execute(sql);
@@ -95,14 +93,14 @@ public class DB {
 
     }
 
-    private static void createCookieTable(String url) {
+    public void createCookieTable(String url) {
         // SQL statement for creating a new table
         String sql = "CREATE TABLE IF NOT EXISTS cookies (\n"
                 + "	cookieId String PRIMARY KEY,\n"
                 + "	timestamp double NOT NULL\n"
                 + ");";
 
-        try (Connection conn = connect(url);
+        try (Connection conn = this.connect(url);
              Statement stmt = conn.createStatement()) {
             // create a new table
             stmt.execute(sql);
