@@ -48,11 +48,11 @@ public class DB implements IDB {
         try (Connection conn = connect()) {
             PreparedStatement pstmt = conn.prepareStatement(sql);
             pstmt.setString(1, c.getId());
-            pstmt.executeUpdate();
+            pstmt.executeQuery();
 
             ResultSet rs = pstmt.executeQuery();
             String cId = rs.getString("cookieId");
-            System.out.println("CookieId " + c.getId()+"\n"+"cookie id from query" + cId);
+            // System.out.println("CookieId " + c.getId()+"\n"+"cookie id from query" + cId);
 
             if (c.getId().equals(cId)) {
                 conn.close();
@@ -66,7 +66,6 @@ public class DB implements IDB {
             System.out.println(e.getMessage());
         }
 
-        System.out.println("It never executed statement");
         return false;
     }
 
