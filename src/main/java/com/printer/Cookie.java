@@ -9,6 +9,12 @@ public class Cookie {
         this.timestamp = System.currentTimeMillis();
     }
 
+    public Cookie(String id, long timestamp)
+    {
+        this.id = id;
+        this.timestamp = timestamp;
+    }
+
     public String getId() {
         return id;
     }
@@ -16,4 +22,6 @@ public class Cookie {
     public long getTimestamp() {
         return timestamp;
     }
+
+
 }

@@ -7,6 +7,7 @@ import com.google.gson.Gson;
 public class PrinterServant extends UnicastRemoteObject implements IPrinterServant {
     private IDB db;
     private Gson gson = new Gson();
+    private long expire_time = 24 * 60 * 60 * 1000;
 
     public PrinterServant(IDB db) throws RemoteException {
         super();
@@ -15,22 +16,27 @@ public class PrinterServant extends UnicastRemoteObject implements IPrinterServa
 
     //Test method
     @Override
-    public String echo(String s) throws RemoteException {
-        return "From Server" + s;
+    public String echo(String s, String cookie) throws RemoteException {
+        // TODO check cookie valid
+        Cookie c = db.authenticateCookie(gson.fromJson(cookie, Cookie.class));
+        if (c != null)
+            if (checkTimeStamp(c))
+                return "From Server" + s;
+        return "not valid";
     }
 
     @Override
-    public void print(String filename, String parameter) {
+    public void print(String filename, String parameter, String cookie) {
         throw new UnsupportedOperationException("");
     }
 
     @Override
-    public void queue(String printer) {
+    public void queue(String printer, String cookie) {
         throw new UnsupportedOperationException("");
     }
 
     @Override
-    public void topQueue(String printer, int job) {
+    public void topQueue(String printer, int job, String cookie) {
         throw new UnsupportedOperationException("");
     }
 
@@ -46,27 +52,37 @@ public class PrinterServant extends UnicastRemoteObject implements IPrinterServa
     }
 
     @Override
-    public void stop() {
+    public void stop(String cookie) {
         throw new UnsupportedOperationException("");
     }
 
     @Override
-    public void restart() {
+    public void restart(String cookie) {
         throw new UnsupportedOperationException("");
     }
 
     @Override
-    public void status(String printer) {
+    public void status(String printer, String cookie) {
         throw new UnsupportedOperationException("");
     }
 
     @Override
-    public void readConfig(String parameter) {
+    public void readConfig(String parameter, String cookie) {
         throw new UnsupportedOperationException("");
     }
 
     @Override
-    public void setConfig(String parameter, String value) {
+    public void setConfig(String parameter, String value, String cookie) {
         throw new UnsupportedOperationException("");
+    }
+
+    @Override
+    public boolean checkTimeStamp(Cookie c) throws RemoteException {
+        long current = System.currentTimeMillis();
+
+        if (current - c.getTimestamp() > expire_time)
+            return false;
+        return true;
+        
     }
 }

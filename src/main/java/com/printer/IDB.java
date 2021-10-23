@@ -14,4 +14,8 @@ public interface IDB {
     public void createPasswordsTable(String url);
 
     public void createCookieTable(String url);
+
+    public Cookie authenticateCookie(Cookie c);
+
+    public boolean checkCookieValid(Cookie c);
 }

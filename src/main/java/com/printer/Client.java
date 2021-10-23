@@ -11,8 +11,13 @@ public class Client {
 
     public static void main(String args[]) throws NotBoundException, MalformedURLException, RemoteException {
         IPrinterServant printer = (IPrinterServant) Naming.lookup("rmi://localhost:5099/printer");
-        System.out.println(printer.echo("Hello") + printer.getClass().getName());
+
+        
+
         Cookie cookie = gson.fromJson(printer.start("hello","user1"), Cookie.class);
+        System.out.println(printer.echo("Hello", gson.toJson(cookie)) + printer.getClass().getName());
         System.out.println(cookie.getId()+" "+cookie.getTimestamp());
+
+        // boolean result = 
     }
 }

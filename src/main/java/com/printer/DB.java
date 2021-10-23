@@ -4,7 +4,8 @@ import java.sql.*;
 
 public class DB implements IDB {
 
-    private static final String dbUrl = "jdbc:sqlite:C:/sqlite/db/printerDB.db";
+    // private static final String dbUrl = "jdbc:sqlite:C:/sqlite/db/printerDB.db";
+    private static final String dbUrl = "jdbc:sqlite:/home/lkj/sqlite-tools-linux-x86-3360000/sqlite-tools-linux-x86-3360000/db/printerDB.db";
 
     public DB() {
         createNewDatabase(dbUrl);
@@ -113,4 +114,46 @@ public class DB implements IDB {
             System.out.println(e.getMessage());
         }
     }
+
+    @Override
+    public Cookie authenticateCookie(Cookie c) {
+        String sql = "SELECT cookieId, timestamp FROM cookies WHERE cookieId=?";
+        String url = dbUrl;
+        try (Connection conn = connect(url);
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setString(1, c.getId());
+            pstmt.executeUpdate();
+            
+            ResultSet rs = pstmt.executeQuery();
+            
+            // return rs.next();
+            // return rs.getString(arg0)
+            if (rs.next()) 
+            {
+                // while(rs.next()){
+                //     long timestamp = rs.getLong("timestamp");
+                //     String id = rs.getString("cookieId");
+                //     Cookie cookie = new Cookie(id, timestamp);
+                //     return cookie;
+                // }
+                return c;
+
+            }
+            return null;
+        } catch (SQLException e) {
+            System.out.println(e.getMessage());
+        }
+
+
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    @Override
+    public boolean checkCookieValid(Cookie c) {
+        // TODO Auto-generated method stub
+        return false;
+    }
+
+    
 }
