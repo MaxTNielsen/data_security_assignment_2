@@ -5,17 +5,19 @@ import java.sql.*;
 public interface IDB {
     public boolean authenticateUser(String pass, String username);
 
-    void addPasswordToDb(String url, String username, String password);
+    void addPasswordToDb(String username, String password);
 
-    public Connection connect(String url);
+    public Connection connect();
 
-    public void createNewDatabase(String url);
+    public void createNewDatabase();
 
-    public void createPasswordsTable(String url);
+    public void createPasswordsTable();
 
-    public void createCookieTable(String url);
+    public void createCookieTable();
 
-    public Cookie authenticateCookie(Cookie c);
+    public boolean authenticateCookie(Cookie c);
 
     public boolean checkCookieValid(Cookie c);
+
+    public Cookie addCookieToDb();
 }

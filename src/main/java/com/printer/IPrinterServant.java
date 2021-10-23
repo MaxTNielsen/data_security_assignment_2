@@ -7,7 +7,7 @@ public interface IPrinterServant extends Remote {
 
     public String echo(String s, String cookie) throws RemoteException;
 
-    public void print(String filename, String parameter, String cookie) throws RemoteException;
+    public void print(String filename, String printer, String cookie) throws RemoteException;
 
     public void queue(String printer, String cookie)throws RemoteException;
 
@@ -26,4 +26,6 @@ public interface IPrinterServant extends Remote {
     public void setConfig(String parameter, String value, String cookie)throws RemoteException;
 
     public boolean checkTimeStamp(Cookie c) throws RemoteException;
+    public boolean authenticateCookie(String cookie) throws RemoteException;
+    public void initialisePrinters() throws RemoteException;
 }

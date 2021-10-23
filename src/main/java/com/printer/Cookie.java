@@ -1,11 +1,14 @@
 package com.printer;
 
+import java.util.UUID;
+
 public class Cookie {
     private final String id;
     private final long timestamp;
 
     public Cookie(){
-        this.id = String.valueOf(Math.random());
+        UUID uuid = UUID.randomUUID();
+        this.id = String.valueOf(uuid);
         this.timestamp = System.currentTimeMillis();
     }
 
@@ -23,5 +26,8 @@ public class Cookie {
         return timestamp;
     }
 
+    public String toString(){
+        return "id: " + this.id + " timestamp: " + this.timestamp;
+    }
 
 }
