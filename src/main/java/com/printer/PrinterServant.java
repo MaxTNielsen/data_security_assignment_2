@@ -3,9 +3,13 @@ package com.printer;
 import java.io.IOException;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 import com.google.gson.Gson;
 
@@ -13,7 +17,8 @@ public class PrinterServant extends UnicastRemoteObject implements IPrinterServa
     private IDB db;
     private Gson gson = new Gson();
     private long expire_time = 24 * 60 * 60 * 1000;
-    private HashMap<String, ArrayList<String>> printers = new HashMap<>(6);
+    //private HashMap<String, ArrayList<String>> printers = new HashMap<>(6);
+    private Map<String, ArrayList<String>> printers = Collections.synchronizedMap(new HashMap<>());
     private boolean[] busy = new boolean[5];
     private ExecutorService executor = Executors.newFixedThreadPool(5);
     private FileWr fw;
@@ -48,12 +53,12 @@ public class PrinterServant extends UnicastRemoteObject implements IPrinterServa
 
     @Override
     public void print(String filename, String printer, String cookie) throws RemoteException {
-        System.out.println("Inside print");
         if (authenticateCookie(cookie)) {
-            int printerIndex = Integer.parseInt(String.valueOf(printer.toCharArray()[printer.length()-1]) ) ;
+            int printerIndex = Integer.parseInt(String.valueOf(printer.toCharArray()[printer.length() - 1]));
             if (busy[printerIndex]) {
                 getPrinterJobs(printer).add(filename);
             } else {
+                getPrinterJobs(printer).add(filename);
                 executor.execute(new printerThreads(printerIndex, filename, printer));
             }
         }
@@ -75,17 +80,28 @@ public class PrinterServant extends UnicastRemoteObject implements IPrinterServa
         Cookie c = null;
         if (db.authenticateUser(password, username)) {
             c = db.addCookieToDb();
-            //System.out.println("it worked!");
         } else {
-            //System.out.println("it didnt work");
             return gson.toJson(c);
         }
         return gson.toJson(c);
     }
 
     @Override
-    public void stop(String cookie) {
-        throw new UnsupportedOperationException("");
+    public void stop(String cookie) throws RemoteException {
+        if (authenticateCookie(cookie)) {
+            try {
+                executor.shutdown();
+                while (true) {
+                    if (executor.awaitTermination(5, TimeUnit.SECONDS)) {
+                        fw.cleanUp();
+                        executor.shutdownNow();
+                        break;
+                    }
+                }
+            } catch (InterruptedException e) {
+                System.out.println(e.getMessage());
+            }
+        } else System.out.println("Session timeout\n Authenticate again");
     }
 
     @Override
@@ -131,42 +147,39 @@ public class PrinterServant extends UnicastRemoteObject implements IPrinterServa
 
         @Override
         public void run() {
-            if (getPrinterJobs(printer).size() < 1) {
-                busy[id] = true;
+            busy[id] = true;
+            if (getPrinterJobs(printer).size() == 1) {
                 try {
-                    Thread.sleep(20000);
-                    fw.writeFile(filename);
-                    //System.out.println(filename);
-                } catch (InterruptedException | IOException e) {
+                    Thread.sleep(2000);
+                    fw.writeFile(filename + System.getProperty("line.separator"));
+                } catch (InterruptedException e) {
                     e.printStackTrace();
+                } finally {
+                    busy[id] = false;
                 }
             } else {
-                while (getPrinterJobs(printer).size() > 0)
-                    busy[id] = true;
-                try {
-                    Thread.sleep(20000);
-                    //System.out.println(getPrinterJobs(printer).get(0));
-                    fw.writeFile(filename);
-                    getPrinterJobs(printer).remove(0);
-                } catch (InterruptedException | IOException e) {
-                    e.printStackTrace();
+                while (getPrinterJobs(printer).size() > 1) {
+                    try {
+                        Thread.sleep(2000);
+                        fw.writeFile(filename + System.getProperty("line.separator"));
+                        getPrinterJobs(printer).remove(0);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    } finally {
+                        busy[id] = false;
+                    }
                 }
             }
             busy[id] = false;
         }
     }
 
-    //Test method
     @Override
-    public String echo(String s, String cookie) throws RemoteException {
+    public String echo(String cookie) throws RemoteException {
         Cookie c = gson.fromJson(cookie, Cookie.class);
-        //System.out.println(c.toString());
-        System.out.println("Did it" + " " + db.authenticateCookie(c));
         if (db.authenticateCookie(c)) {
-            //System.out.println("It worked" + db.authenticateCookie(c));
             if (checkTimeStamp(c))
-                System.out.println(System.currentTimeMillis() - c.getTimestamp());
-            return "From Server";
+                return "From Server";
         }
         return "From Server";
     }
