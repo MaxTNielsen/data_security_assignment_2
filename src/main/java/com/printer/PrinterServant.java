@@ -14,12 +14,13 @@ public class PrinterServant extends UnicastRemoteObject implements IPrinterServa
     private Gson gson = new Gson();
     private long expire_time = 24 * 60 * 60 * 1000;
     private HashMap<String, ArrayList<String>> printers = new HashMap<>(6);
-    private Boolean[] busy = new Boolean[5];
+    private boolean[] busy = new boolean[5];
     private ExecutorService executor = Executors.newFixedThreadPool(5);
     private FileWr fw;
 
     public PrinterServant(IDB db) throws IOException {
         super();
+        initialisePrinters();
         this.db = db;
         this.fw = new FileWr();
     }
@@ -49,7 +50,7 @@ public class PrinterServant extends UnicastRemoteObject implements IPrinterServa
     public void print(String filename, String printer, String cookie) throws RemoteException {
         System.out.println("Inside print");
         if (authenticateCookie(cookie)) {
-            int printerIndex = printer.toCharArray()[printer.length() - 1];
+            int printerIndex = Integer.parseInt(String.valueOf(printer.toCharArray()[printer.length()-1]) ) ;
             if (busy[printerIndex]) {
                 getPrinterJobs(printer).add(filename);
             } else {
