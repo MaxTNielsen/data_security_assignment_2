@@ -69,5 +69,4 @@ public class PrinterServant extends UnicastRemoteObject implements IPrinterServa
     public void setConfig(String parameter, String value) {
         throw new UnsupportedOperationException("");
     }
-
 }

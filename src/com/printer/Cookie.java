@@ -1,8 +1,8 @@
 package com.printer;
 
 public class Cookie {
-    private String id;
-    private long timestamp;
+    private final String id;
+    private final long timestamp;
 
     public Cookie(){
         this.id = String.valueOf(Math.random());

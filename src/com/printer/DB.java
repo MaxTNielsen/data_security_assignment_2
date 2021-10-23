@@ -16,6 +16,7 @@ public class DB implements IDB{
         addPasswordToDb(dbUrl, "user2", "hello");
     }
 
+    @Override
     public boolean authenticateUser(String pass, String username){
 
         String sql = "SELECT password FROM passwords WHERE password=? AND username=?";
@@ -37,6 +38,7 @@ public class DB implements IDB{
         return false;
     }
 
+    @Override
     public void addPasswordToDb(String url, String username, String password) {
         String sql = "INSERT INTO passwords(username,password) VALUES(?,?)";
 
@@ -50,6 +52,7 @@ public class DB implements IDB{
         }
     }
 
+    @Override
     public Connection connect(String url) {
         Connection conn = null;
         try {
@@ -60,6 +63,7 @@ public class DB implements IDB{
         return conn;
     }
 
+    @Override
     public void createNewDatabase(String url) {
 
         try (Connection conn = this.connect(url)) {
@@ -75,6 +79,7 @@ public class DB implements IDB{
 
     }
 
+    @Override
     public void createPasswordsTable(String url) {
         // SQL statement for creating a new table
         String sql = "CREATE TABLE IF NOT EXISTS passwords (\n"
@@ -93,6 +98,7 @@ public class DB implements IDB{
 
     }
 
+    @Override
     public void createCookieTable(String url) {
         // SQL statement for creating a new table
         String sql = "CREATE TABLE IF NOT EXISTS cookies (\n"
