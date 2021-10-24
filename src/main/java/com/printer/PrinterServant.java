@@ -9,6 +9,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 
 import com.google.gson.Gson;
@@ -22,6 +23,7 @@ public class PrinterServant extends UnicastRemoteObject implements IPrinterServa
     private boolean[] busy = new boolean[5];
     private ExecutorService executor = Executors.newFixedThreadPool(5);
     private FileWr fw;
+    private Semaphore semaphore = new Semaphore(1);
 
     public PrinterServant(IDB db) throws IOException {
         super();
@@ -32,6 +34,27 @@ public class PrinterServant extends UnicastRemoteObject implements IPrinterServa
 
     synchronized ArrayList<String> getPrinterJobs(String printer) {
         return printers.get(printer);
+    }
+
+    boolean getFlag(int index) {
+        try {
+            semaphore.acquire();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        boolean b = busy[index];
+        semaphore.release();
+        return b;
+    }
+
+    void setFlag(int index, boolean b) {
+        try {
+            semaphore.acquire();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        busy[index] = b;
+        semaphore.release();
     }
 
     @Override
@@ -54,7 +77,7 @@ public class PrinterServant extends UnicastRemoteObject implements IPrinterServa
     public void print(String filename, String printer, String cookie) throws RemoteException {
         if (authenticateCookie(cookie)) {
             int printerIndex = Integer.parseInt(String.valueOf(printer.toCharArray()[printer.length() - 1]));
-            if (busy[printerIndex]) {
+            if (getFlag(printerIndex)) {
                 getPrinterJobs(printer).add(filename);
             } else {
                 getPrinterJobs(printer).add(filename);
@@ -142,18 +165,17 @@ public class PrinterServant extends UnicastRemoteObject implements IPrinterServa
 
         @Override
         public void run() {
+            setFlag(id, true);
             try {
                 while (getPrinterJobs(printer).size() > 0) {
-                    busy[id] = true;
                     Thread.sleep(2000);
                     fw.writeFile(getPrinterJobs(printer).get(0) + System.getProperty("line.separator"));
-                    System.out.println("Printing " + filename + "from" + currentThread().getName());
                     getPrinterJobs(printer).remove(0);
                 }
             } catch (InterruptedException e) {
                 e.printStackTrace();
             } finally {
-                busy[id] = false;
+                setFlag(id, false);
             }
         }
     }
