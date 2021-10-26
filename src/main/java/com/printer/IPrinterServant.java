@@ -5,8 +5,6 @@ import java.rmi.RemoteException;
 
 public interface IPrinterServant extends Remote {
 
-    public String echo(String cookie) throws RemoteException;
-
     public void print(String filename, String printer, String cookie) throws RemoteException;
 
     public void queue(String printer, String cookie) throws RemoteException;

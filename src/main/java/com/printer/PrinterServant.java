@@ -20,10 +20,11 @@ public class PrinterServant extends UnicastRemoteObject implements IPrinterServa
     private long expire_time = 24 * 60 * 60 * 1000;
     //private HashMap<String, ArrayList<String>> printers = new HashMap<>(6);
     private Map<String, ArrayList<String>> printers;
+    private Map<String, String> param = new HashMap<>();
     private boolean[] busy = new boolean[5];
     private ExecutorService executor;
     private FileWr fw;
-    private Semaphore [] sem = new Semaphore [] {new Semaphore(1),
+    private Semaphore[] sem = new Semaphore[]{new Semaphore(1),
             new Semaphore(1), new Semaphore(1), new Semaphore(1), new Semaphore(1)};
 
     public PrinterServant(IDB db) throws IOException {
@@ -99,7 +100,7 @@ public class PrinterServant extends UnicastRemoteObject implements IPrinterServa
     @Override
     public void queue(String printer, String cookie) throws RemoteException {
         if (authenticateCookie(cookie)) {
-            fw.writeFile(printer+ " queue: " + printers.get(printer) + System.getProperty("line.separator"));
+            fw.writeFile(printer + " queue: " + printers.get(printer) + System.getProperty("line.separator"));
         }
     }
 
@@ -113,8 +114,7 @@ public class PrinterServant extends UnicastRemoteObject implements IPrinterServa
                 tempJob = printers.get(printer).get(job);
                 printers.get(printer).remove(job);
                 printers.get(printer).add(0, tempJob);
-            }
-            else {
+            } else {
                 System.out.println("Illegal argument");
             }
             sem[printerIndex].release();
@@ -135,7 +135,6 @@ public class PrinterServant extends UnicastRemoteObject implements IPrinterServa
         }
         return gson.toJson(c);
     }
-
 
 
     public String start(String cookie) throws RemoteException {
@@ -176,18 +175,29 @@ public class PrinterServant extends UnicastRemoteObject implements IPrinterServa
     }
 
     @Override
-    public void status(String printer, String cookie) {
-        throw new UnsupportedOperationException("");
+    public void status(String printer, String cookie) throws RemoteException {
+        if (authenticateCookie(cookie)) {
+            int printerIndex = Integer.parseInt(String.valueOf(printer.toCharArray()[printer.length() - 1]));
+            if (getFlag(printerIndex)) {
+                fw.writeFile(printer + " is printing" + System.getProperty("line.separator"));
+            } else {
+                fw.writeFile(printer + " is not printing" + System.getProperty("line.separator"));
+            }
+        }
     }
 
     @Override
-    public void readConfig(String parameter, String cookie) {
-        throw new UnsupportedOperationException("");
+    public void readConfig(String parameter, String cookie) throws RemoteException {
+        if (authenticateCookie(cookie)) {
+            fw.writeFile(param.get(parameter) + System.getProperty("line.separator"));
+        }
     }
 
     @Override
-    public void setConfig(String parameter, String value, String cookie) {
-        throw new UnsupportedOperationException("");
+    public void setConfig(String parameter, String value, String cookie) throws RemoteException {
+        if (authenticateCookie(cookie)) {
+            param.put(parameter, value);
+        }
     }
 
     @Override
@@ -222,15 +232,5 @@ public class PrinterServant extends UnicastRemoteObject implements IPrinterServa
                 setFlag(id, false);
             }
         }
-    }
-
-    @Override
-    public String echo(String cookie) throws RemoteException {
-        Cookie c = gson.fromJson(cookie, Cookie.class);
-        if (db.authenticateCookie(c)) {
-            if (checkTimeStamp(c))
-                return "From Server";
-        }
-        return "From Server";
     }
 }

@@ -19,11 +19,13 @@ public class Client {
         printer.topQueue("printer0", 1, gson.toJson(cookie));
         printer.queue("printer0",gson.toJson(cookie));
         printer.print("file4", "printer1", gson.toJson(cookie));
-        //System.out.println(cookie.toString());
-        System.out.println(printer.echo(gson.toJson(cookie)) + " " + printer.getClass().getName());
+        printer.restart(gson.toJson(cookie));
+        printer.print("file2", "printer2", gson.toJson(cookie));
+        printer.print("file4", "printer4", gson.toJson(cookie));
+        printer.print("file7", "printer2", gson.toJson(cookie));
+        printer.setConfig("Margin", "0,5", gson.toJson(cookie));
+        printer.readConfig("Margin",gson.toJson(cookie));
+        printer.status("printer2", gson.toJson(cookie));
         printer.stop(gson.toJson(cookie));
-        Cookie newCookie = gson.fromJson(printer.start("hello", "user1"), Cookie.class);
-        printer.print("file5", "printer2", gson.toJson(newCookie));
-        //System.out.println(cookie.getId()+" "+cookie.getTimestamp());
     }
 }

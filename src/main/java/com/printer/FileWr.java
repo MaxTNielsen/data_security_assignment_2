@@ -14,15 +14,13 @@ public class FileWr {
 
     public void setWriter() {
         try {
-
-            //file.createNewFile();
             this.writer = new FileWriter("log.txt", true);
         } catch (IOException e) {
             System.out.println(e.getMessage());
         }
     }
 
-    synchronized void writeFile(String content){
+    synchronized void writeFile(String content) {
         try {
             writer.write(content);
             writer.flush();
@@ -30,6 +28,7 @@ public class FileWr {
             System.out.println(e.getMessage());
         }
     }
+
     public void cleanUp() {
         try {
             writer.close();
