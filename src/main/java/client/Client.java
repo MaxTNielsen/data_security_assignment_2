@@ -1,6 +1,8 @@
-package com.printer;
+package client;
 
 import com.google.gson.Gson;
+import com.printer.Cookie;
+import com.printer.IPrinterServant;
 
 import java.io.IOException;
 import java.rmi.Naming;
