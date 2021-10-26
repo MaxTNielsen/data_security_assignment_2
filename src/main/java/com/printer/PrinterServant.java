@@ -1,5 +1,7 @@
 package com.printer;
 
+import com.google.gson.Gson;
+
 import java.io.IOException;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
@@ -11,8 +13,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
-
-import com.google.gson.Gson;
 
 public class PrinterServant extends UnicastRemoteObject implements IPrinterServant {
     private IDB db;
@@ -87,8 +87,10 @@ public class PrinterServant extends UnicastRemoteObject implements IPrinterServa
     }
 
     @Override
-    public void queue(String printer, String cookie) {
-        throw new UnsupportedOperationException("");
+    public void queue(String printer, String cookie) throws RemoteException {
+        if (authenticateCookie(cookie)) {
+            fw.writeFile(printer+ " queue: " + printers.get(printer) + System.getProperty("line.separator"));
+        }
     }
 
     @Override
@@ -124,6 +126,7 @@ public class PrinterServant extends UnicastRemoteObject implements IPrinterServa
                 System.out.println(e.getMessage());
             }
         } else System.out.println("Session timeout\n Authenticate again");
+        System.out.println("Server Closed.");
     }
 
     @Override

@@ -1,10 +1,10 @@
 package com.printer;
 
+import com.google.gson.Gson;
+
 import java.io.IOException;
 import java.rmi.Naming;
 import java.rmi.NotBoundException;
-
-import com.google.gson.Gson;
 
 public class Client {
     private static Gson gson = new Gson();
@@ -14,7 +14,9 @@ public class Client {
         Cookie cookie = gson.fromJson(printer.start("hello", "user1"), Cookie.class);
         printer.print("file1", "printer0", gson.toJson(cookie));
         printer.print("file2", "printer1", gson.toJson(cookie));
+        printer.queue("printer0",gson.toJson(cookie));
         printer.print("file3", "printer0", gson.toJson(cookie));
+        printer.queue("printer0",gson.toJson(cookie));
         printer.print("file4", "printer1", gson.toJson(cookie));
         //System.out.println(cookie.toString());
         System.out.println(printer.echo(gson.toJson(cookie)) + " " + printer.getClass().getName());

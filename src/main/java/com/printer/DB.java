@@ -1,7 +1,5 @@
 package com.printer;
 
-import com.sun.jdi.request.StepRequest;
-
 import java.sql.*;
 
 public class DB implements IDB {
@@ -43,7 +41,7 @@ public class DB implements IDB {
     @Override
     public boolean authenticateCookie(Cookie c) {
 
-        String sql = "SELECT cookieId FROM cookies WHERE cookieId=?";
+        String sql = "SELECT id FROM cookies WHERE id=?";
 
         try (Connection conn = connect()) {
             PreparedStatement pstmt = conn.prepareStatement(sql);
@@ -51,7 +49,7 @@ public class DB implements IDB {
             pstmt.executeQuery();
 
             ResultSet rs = pstmt.executeQuery();
-            String cId = rs.getString("cookieId");
+            String cId = rs.getString("id");
             // System.out.println("CookieId " + c.getId()+"\n"+"cookie id from query" + cId);
 
             if (c.getId().equals(cId)) {
@@ -86,7 +84,7 @@ public class DB implements IDB {
     @Override
     public Cookie addCookieToDb() {
         Cookie c = new Cookie();
-        String sql = "INSERT INTO cookies(cookieId,timestamp) VALUES(?,?)";
+        String sql = "INSERT INTO cookies(id,timestamp) VALUES(?,?)";
 
         try (Connection conn = connect()) {
             PreparedStatement pstmt = conn.prepareStatement(sql);
