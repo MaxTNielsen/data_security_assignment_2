@@ -19,46 +19,56 @@ public class PrinterServant extends UnicastRemoteObject implements IPrinterServa
     private Gson gson = new Gson();
     private long expire_time = 24 * 60 * 60 * 1000;
     //private HashMap<String, ArrayList<String>> printers = new HashMap<>(6);
-    private Map<String, ArrayList<String>> printers = Collections.synchronizedMap(new HashMap<>());
+    private Map<String, ArrayList<String>> printers;
     private boolean[] busy = new boolean[5];
-    private ExecutorService executor = Executors.newFixedThreadPool(5);
+    private ExecutorService executor;
     private FileWr fw;
-    private Semaphore semaphore = new Semaphore(1);
+    private Semaphore [] sem = new Semaphore [] {new Semaphore(1),
+            new Semaphore(1), new Semaphore(1), new Semaphore(1), new Semaphore(1)};
 
     public PrinterServant(IDB db) throws IOException {
         super();
-        initialisePrinters();
         this.db = db;
         this.fw = new FileWr();
     }
 
-    synchronized ArrayList<String> getPrinterJobs(String printer) {
-        return printers.get(printer);
+    ArrayList<String> getPrinterJobs(String printer) {
+        try {
+            int printerIndex = Integer.parseInt(String.valueOf(printer.toCharArray()[printer.length() - 1]));
+            sem[printerIndex].acquire();
+            ArrayList<String> tempPrinters = printers.get(printer);
+            sem[printerIndex].release();
+            return tempPrinters;
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 
     boolean getFlag(int index) {
         try {
-            semaphore.acquire();
+            sem[index].acquire();
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
         boolean b = busy[index];
-        semaphore.release();
+        sem[index].release();
         return b;
     }
 
     void setFlag(int index, boolean b) {
         try {
-            semaphore.acquire();
+            sem[index].acquire();
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
         busy[index] = b;
-        semaphore.release();
+        sem[index].release();
     }
 
     @Override
     public void initialisePrinters() throws RemoteException {
+        printers = Collections.synchronizedMap(new HashMap<>());
         for (int i = 0; i < 5; i++) {
             printers.put("printer" + i, new ArrayList<>());
         }
@@ -94,20 +104,50 @@ public class PrinterServant extends UnicastRemoteObject implements IPrinterServa
     }
 
     @Override
-    public void topQueue(String printer, int job, String cookie) {
-        throw new UnsupportedOperationException("");
+    public void topQueue(String printer, int job, String cookie) throws RemoteException, IndexOutOfBoundsException, InterruptedException {
+        String tempJob = null;
+        if (authenticateCookie(cookie)) {
+            int printerIndex = Integer.parseInt(String.valueOf(printer.toCharArray()[printer.length() - 1]));
+            sem[printerIndex].acquire();
+            if (printers.get(printer).size() > job) {
+                tempJob = printers.get(printer).get(job);
+                printers.get(printer).remove(job);
+                printers.get(printer).add(0, tempJob);
+            }
+            else {
+                System.out.println("Illegal argument");
+            }
+            sem[printerIndex].release();
+        }
     }
 
     @Override
-    public String start(String password, String username) {
+    public String start(String password, String username) throws RemoteException {
         //Authenticate client with password param
         Cookie c = null;
         if (db.authenticateUser(password, username)) {
+            initialisePrinters();
+            fw.setWriter();
+            executor = Executors.newFixedThreadPool(5);
             c = db.addCookieToDb();
         } else {
             return gson.toJson(c);
         }
         return gson.toJson(c);
+    }
+
+
+
+    public String start(String cookie) throws RemoteException {
+        //Authenticate client with password param
+        if (db.authenticateCookie(gson.fromJson(cookie, Cookie.class))) {
+            initialisePrinters();
+            fw.setWriter();
+            executor = Executors.newFixedThreadPool(5);
+        } else {
+            return gson.toJson(cookie);
+        }
+        return gson.toJson(cookie);
     }
 
     @Override
@@ -130,8 +170,9 @@ public class PrinterServant extends UnicastRemoteObject implements IPrinterServa
     }
 
     @Override
-    public void restart(String cookie) {
-        throw new UnsupportedOperationException("");
+    public void restart(String cookie) throws RemoteException {
+        stop(cookie);
+        start(cookie);
     }
 
     @Override

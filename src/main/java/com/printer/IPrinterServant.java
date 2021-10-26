@@ -11,7 +11,7 @@ public interface IPrinterServant extends Remote {
 
     public void queue(String printer, String cookie) throws RemoteException;
 
-    public void topQueue(String printer, int job, String cookie) throws RemoteException;
+    public void topQueue(String printer, int job, String cookie) throws RemoteException, InterruptedException;
 
     public String start(String password, String username) throws RemoteException;
 
