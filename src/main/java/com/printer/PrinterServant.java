@@ -17,11 +17,11 @@ import java.util.concurrent.TimeUnit;
 public class PrinterServant extends UnicastRemoteObject implements IPrinterServant {
     private IDB db;
     private Gson gson = new Gson();
-    private long expire_time = 24 * 60 * 60 * 1000;
-    //private HashMap<String, ArrayList<String>> printers = new HashMap<>(6);
+    private static final long EXPIRE_TIME = 24 * 60 * 60 * 1000;
+    private static final int N_THREADS = 5;
     private Map<String, ArrayList<String>> printers;
     private Map<String, String> param = new HashMap<>();
-    private boolean[] busy = new boolean[5];
+    private boolean[] busy = new boolean[N_THREADS];
     private ExecutorService executor;
     private FileWr fw;
     private Semaphore[] sem = new Semaphore[]{new Semaphore(1),
@@ -70,7 +70,7 @@ public class PrinterServant extends UnicastRemoteObject implements IPrinterServa
     @Override
     public void initialisePrinters() throws RemoteException {
         printers = Collections.synchronizedMap(new HashMap<>());
-        for (int i = 0; i < 5; i++) {
+        for (int i = 0; i < N_THREADS; i++) {
             printers.put("printer" + i, new ArrayList<>());
         }
     }
@@ -128,7 +128,7 @@ public class PrinterServant extends UnicastRemoteObject implements IPrinterServa
         if (db.authenticateUser(password, username)) {
             initialisePrinters();
             fw.setWriter();
-            executor = Executors.newFixedThreadPool(5);
+            executor = Executors.newFixedThreadPool(N_THREADS);
             c = db.addCookieToDb();
         } else {
             return gson.toJson(c);
@@ -136,13 +136,12 @@ public class PrinterServant extends UnicastRemoteObject implements IPrinterServa
         return gson.toJson(c);
     }
 
-
     public String start(String cookie) throws RemoteException {
         //Authenticate client with password param
         if (db.authenticateCookie(gson.fromJson(cookie, Cookie.class))) {
             initialisePrinters();
             fw.setWriter();
-            executor = Executors.newFixedThreadPool(5);
+            executor = Executors.newFixedThreadPool(N_THREADS);
         } else {
             return gson.toJson(cookie);
         }
@@ -203,7 +202,7 @@ public class PrinterServant extends UnicastRemoteObject implements IPrinterServa
     @Override
     public boolean checkTimeStamp(Cookie c) throws RemoteException {
         long current = System.currentTimeMillis();
-        return current - c.getTimestamp() <= expire_time;
+        return current - c.getTimestamp() <= EXPIRE_TIME;
     }
 
     private class printerThreads extends Thread {
