@@ -6,9 +6,9 @@ import org.apache.commons.codec.digest.DigestUtils;
 
 public class DB implements IDB {
 
-    // private static final String dbUrl = "jdbc:sqlite:C:/sqlite/db/printerDB.db";
+    private static final String dbUrl = "jdbc:sqlite:C:/sqlite/db/printerDB.db";
 
-    private static final String dbUrl = "jdbc:sqlite:/Users/lkj/Downloads/sqlite-tools-osx-x86-3360000/db/printerDB.db";
+    // private static final String dbUrl = "jdbc:sqlite:/Users/lkj/Downloads/sqlite-tools-osx-x86-3360000/db/printerDB.db";
     public DB() {
         createNewDatabase();
 
