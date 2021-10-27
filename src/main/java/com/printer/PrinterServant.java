@@ -24,6 +24,7 @@ public class PrinterServant extends UnicastRemoteObject implements IPrinterServa
     private boolean[] busy = new boolean[N_THREADS];
     private ExecutorService executor;
     private FileWr fw;
+    private Map<String, String> cookie_user_map;
     private Semaphore[] sem = new Semaphore[]{new Semaphore(1),
             new Semaphore(1), new Semaphore(1), new Semaphore(1), new Semaphore(1)};
 
@@ -31,6 +32,7 @@ public class PrinterServant extends UnicastRemoteObject implements IPrinterServa
         super();
         this.db = db;
         this.fw = new FileWr();
+        cookie_user_map = new HashMap<>();
     }
 
     ArrayList<String> getPrinterJobs(String printer) {
@@ -88,6 +90,8 @@ public class PrinterServant extends UnicastRemoteObject implements IPrinterServa
     public void print(String filename, String printer, String cookie) throws RemoteException {
         if (authenticateCookie(cookie)) {
             int printerIndex = Integer.parseInt(String.valueOf(printer.toCharArray()[printer.length() - 1]));
+            Cookie c = gson.fromJson(cookie, Cookie.class);
+            fw.writeFile("user "+ cookie_user_map.get(c.getId())+" call print to printer " + printer+"\n");
             if (getFlag(printerIndex)) {
                 getPrinterJobs(printer).add(filename);
             } else {
@@ -100,7 +104,8 @@ public class PrinterServant extends UnicastRemoteObject implements IPrinterServa
     @Override
     public void queue(String printer, String cookie) throws RemoteException {
         if (authenticateCookie(cookie)) {
-            fw.writeFile(printer + " queue: " + printers.get(printer) + System.getProperty("line.separator"));
+            Cookie c = gson.fromJson(cookie, Cookie.class);
+            fw.writeFile("user "+ cookie_user_map.get(c.getId())+" call queue " + printer + " queue: " + printers.get(printer) + System.getProperty("line.separator"));
         }
     }
 
@@ -130,6 +135,7 @@ public class PrinterServant extends UnicastRemoteObject implements IPrinterServa
             fw.setWriter();
             executor = Executors.newFixedThreadPool(N_THREADS);
             c = db.addCookieToDb();
+            cookie_user_map.put(c.getId(), username);
         } else {
             return gson.toJson(c);
         }
@@ -195,7 +201,9 @@ public class PrinterServant extends UnicastRemoteObject implements IPrinterServa
     @Override
     public void setConfig(String parameter, String value, String cookie) throws RemoteException {
         if (authenticateCookie(cookie)) {
+            Cookie c = gson.fromJson(cookie, Cookie.class);
             param.put(parameter, value);
+            fw.writeFile("user" + cookie_user_map.get(c.getId())+ " set config " + param.get(parameter) + System.getProperty("line.separator"));
         }
     }
 

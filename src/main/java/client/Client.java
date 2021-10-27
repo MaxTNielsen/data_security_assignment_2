@@ -29,5 +29,10 @@ public class Client {
         printer.readConfig("Margin",gson.toJson(cookie));
         printer.status("printer2", gson.toJson(cookie));
         printer.stop(gson.toJson(cookie));
+
+        Cookie cookie2 = gson.fromJson(printer.start("hello2", "user2"), Cookie.class);
+        printer.print("file2", "printer1", gson.toJson(cookie2));
+        printer.stop(gson.toJson(cookie2));
+
     }
 }
