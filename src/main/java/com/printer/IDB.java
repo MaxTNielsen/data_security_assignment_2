@@ -17,7 +17,5 @@ public interface IDB {
 
     public boolean authenticateCookie(Cookie c);
 
-    public boolean checkCookieValid(Cookie c);
-
     public Cookie addCookieToDb();
 }

@@ -114,8 +114,6 @@ public class DB implements IDB {
         try (Connection conn = this.connect()) {
             if (conn != null) {
                 DatabaseMetaData meta = conn.getMetaData();
-                System.out.println("The driver name is " + meta.getDriverName());
-                System.out.println("A new database has been created.");
                 conn.close();
             }
 
@@ -160,12 +158,5 @@ public class DB implements IDB {
             System.out.println(e.getMessage());
         }
     }
-
-    @Override
-    public boolean checkCookieValid(Cookie c) {
-        // TODO Auto-generated method stub
-        return false;
-    }
-
 
 }
