@@ -6,9 +6,9 @@ import org.apache.commons.codec.digest.DigestUtils;
 
 public class DB implements IDB {
 
-    // private static final String dbUrl = "jdbc:sqlite:C:/sqlite/db/printerDB.db";
-    private static final String dbUrl = "jdbc:sqlite:/Users/lkj/Downloads/sqlite-tools-osx-x86-3360000/db/printerDB.db";
+    private static final String dbUrl = "jdbc:sqlite:C:/sqlite/db/printerDB.db";
 
+    //private static final String dbUrl = "jdbc:sqlite:/Users/lkj/Downloads/sqlite-tools-osx-x86-3360000/db/printerDB.db";
     public DB() {
         createNewDatabase();
 
@@ -45,36 +45,31 @@ public class DB implements IDB {
     public boolean authenticateCookie(Cookie c) {
 
         String sql = "SELECT id FROM cookies WHERE id=?";
+        String cookie_sha256hex = DigestUtils.sha256Hex(c.getId());
 
         try (Connection conn = connect()) {
             PreparedStatement pstmt = conn.prepareStatement(sql);
-            pstmt.setString(1, c.getId());
+            pstmt.setString(1, cookie_sha256hex);
             pstmt.executeQuery();
 
             ResultSet rs = pstmt.executeQuery();
             String cId = rs.getString("id");
             // System.out.println("CookieId " + c.getId()+"\n"+"cookie id from query" + cId);
 
-            if (c.getId().equals(cId)) {
-                conn.close();
-                return true;
-            }
-
             conn.close();
-            return false;
+            return rs.next();
 
         } catch (SQLException e) {
             System.out.println(e.getMessage());
         }
-
         return false;
     }
 
     @Override
     public void addPasswordToDb(String username, String password) {
         String sql = "INSERT INTO passwords(username,password) VALUES(?,?)";
-
         String pass_sha256hex = DigestUtils.sha256Hex(password);
+
         try (Connection conn = connect()) {
             PreparedStatement pstmt = conn.prepareStatement(sql);
             pstmt.setString(1, username);
@@ -89,10 +84,11 @@ public class DB implements IDB {
     public Cookie addCookieToDb() {
         Cookie c = new Cookie();
         String sql = "INSERT INTO cookies(id,timestamp) VALUES(?,?)";
+        String cookie_sha256hex = DigestUtils.sha256Hex(c.getId());
 
         try (Connection conn = connect()) {
             PreparedStatement pstmt = conn.prepareStatement(sql);
-            pstmt.setString(1, c.getId());
+            pstmt.setString(1, cookie_sha256hex);
             pstmt.setLong(2, c.getTimestamp());
             pstmt.executeUpdate();
         } catch (SQLException e) {
@@ -118,8 +114,6 @@ public class DB implements IDB {
         try (Connection conn = this.connect()) {
             if (conn != null) {
                 DatabaseMetaData meta = conn.getMetaData();
-                System.out.println("The driver name is " + meta.getDriverName());
-                System.out.println("A new database has been created.");
                 conn.close();
             }
 
@@ -164,12 +158,5 @@ public class DB implements IDB {
             System.out.println(e.getMessage());
         }
     }
-
-    @Override
-    public boolean checkCookieValid(Cookie c) {
-        // TODO Auto-generated method stub
-        return false;
-    }
-
 
 }

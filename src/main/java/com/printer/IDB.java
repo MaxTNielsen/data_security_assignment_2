@@ -3,21 +3,19 @@ package com.printer;
 import java.sql.*;
 
 public interface IDB {
-    public boolean authenticateUser(String pass, String username);
+    boolean authenticateUser(String pass, String username);
 
     void addPasswordToDb(String username, String password);
 
-    public Connection connect();
+    Connection connect();
 
-    public void createNewDatabase();
+    void createNewDatabase();
 
-    public void createPasswordsTable();
+    void createPasswordsTable();
 
-    public void createCookieTable();
+    void createCookieTable();
 
-    public boolean authenticateCookie(Cookie c);
+    boolean authenticateCookie(Cookie c);
 
-    public boolean checkCookieValid(Cookie c);
-
-    public Cookie addCookieToDb();
+    Cookie addCookieToDb();
 }
