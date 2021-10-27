@@ -13,7 +13,7 @@ public class Client {
 
     public static void main(String args[]) throws NotBoundException, IOException, InterruptedException {
         IPrinterServant printer = (IPrinterServant) Naming.lookup("rmi://localhost:5099/printer");
-        Cookie cookie = gson.fromJson(printer.start("hello", "user1"), Cookie.class);
+        Cookie cookie = gson.fromJson(printer.start("hello1", "user1"), Cookie.class);
         printer.print("file1", "printer0", gson.toJson(cookie));
         printer.print("file2", "printer1", gson.toJson(cookie));
         printer.queue("printer0",gson.toJson(cookie));
