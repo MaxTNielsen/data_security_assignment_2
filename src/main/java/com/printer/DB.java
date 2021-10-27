@@ -2,10 +2,12 @@ package com.printer;
 
 import java.sql.*;
 
+import org.apache.commons.codec.digest.DigestUtils;
+
 public class DB implements IDB {
 
-    private static final String dbUrl = "jdbc:sqlite:C:/sqlite/db/printerDB.db";
-    // private static final String dbUrl = "jdbc:sqlite:/home/lkj/sqlite-tools-linux-x86-3360000/sqlite-tools-linux-x86-3360000/db/printerDB.db";
+    // private static final String dbUrl = "jdbc:sqlite:C:/sqlite/db/printerDB.db";
+    private static final String dbUrl = "jdbc:sqlite:/Users/lkj/Downloads/sqlite-tools-osx-x86-3360000/db/printerDB.db";
 
     public DB() {
         createNewDatabase();
@@ -13,18 +15,19 @@ public class DB implements IDB {
         createCookieTable();
         createPasswordsTable();
 
-        addPasswordToDb("user1", "hello");
-        addPasswordToDb("user2", "hello");
+        addPasswordToDb("user1", "hello1");
+        addPasswordToDb("user2", "hello2");
     }
 
     @Override
     public boolean authenticateUser(String pass, String username) {
 
         String sql = "SELECT password FROM passwords WHERE password=? AND username=?";
+        String pass_sha256hex = DigestUtils.sha256Hex(pass);
 
         try (Connection conn = connect()) {
             PreparedStatement psmt = conn.prepareStatement(sql);
-            psmt.setString(1, pass);
+            psmt.setString(1, pass_sha256hex);
             psmt.setString(2, username);
 
             ResultSet rs = psmt.executeQuery();
@@ -71,10 +74,11 @@ public class DB implements IDB {
     public void addPasswordToDb(String username, String password) {
         String sql = "INSERT INTO passwords(username,password) VALUES(?,?)";
 
+        String pass_sha256hex = DigestUtils.sha256Hex(password);
         try (Connection conn = connect()) {
             PreparedStatement pstmt = conn.prepareStatement(sql);
             pstmt.setString(1, username);
-            pstmt.setString(2, password);
+            pstmt.setString(2, pass_sha256hex);
             pstmt.executeUpdate();
         } catch (SQLException e) {
             System.out.println(e.getMessage());
