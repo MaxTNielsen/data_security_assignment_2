@@ -36,6 +36,5 @@ public class Client {
         String pass2_sha = DigestUtils.sha256Hex(pass2);
         printer.print(pass2, "user1","file2", "printer1");
         printer.stop(pass2, "user1");
-
     }
 }

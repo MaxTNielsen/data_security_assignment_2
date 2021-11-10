@@ -50,7 +50,9 @@ public class PrinterServant extends UnicastRemoteObject implements IPrinterServa
 
     private void readFile(){
         try {
-            JsonElement root = new JsonParser().parse(new FileReader("access_control_policy.json"));
+            FileReader fr = new FileReader("access_control_policy.json");
+            JsonElement root = new JsonParser().parse(fr);
+            fr.close();
             JsonObject object = root.getAsJsonObject();
             this.map = new Gson().fromJson(object.toString(), Map.class);
 
@@ -67,13 +69,11 @@ public class PrinterServant extends UnicastRemoteObject implements IPrinterServa
     }
 
     private boolean CheckUserPermission(String username, String op){
-        Gson gson = new Gson();
         ArrayList<String> operation = map.get(op);
         if(operation.contains(username))
             return true;
         return false;
     }
-    
     
     ArrayList<String> getPrinterJobs(String printer) {
         try {
@@ -120,14 +120,16 @@ public class PrinterServant extends UnicastRemoteObject implements IPrinterServa
     @Override
     public void print(String password, String username,String filename, String printer) throws RemoteException {
         if (db.authenticateUser(password, username)) {
-            int printerIndex = Integer.parseInt(String.valueOf(printer.toCharArray()[printer.length() - 1]));
-         
-            fw.writeFile("user "+ username+" call print to printer " + printer+"\n");
-            if (getFlag(printerIndex)) {
-                getPrinterJobs(printer).add(filename);
-            } else {
-                getPrinterJobs(printer).add(filename);
-                executor.execute(new printerThreads(printerIndex, filename, printer));
+            if(CheckUserPermission(username, "print")){    
+                int printerIndex = Integer.parseInt(String.valueOf(printer.toCharArray()[printer.length() - 1]));
+                
+                fw.writeFile("user "+ username+" call print to printer " + printer+"\n");
+                if (getFlag(printerIndex)) {
+                    getPrinterJobs(printer).add(filename);
+                } else {
+                    getPrinterJobs(printer).add(filename);
+                    executor.execute(new printerThreads(printerIndex, filename, printer));
+                }
             }
         }
     }
@@ -135,7 +137,9 @@ public class PrinterServant extends UnicastRemoteObject implements IPrinterServa
     @Override
     public void queue(String password, String username,String printer) throws RemoteException {
         if (db.authenticateUser(password, username)) {
-            fw.writeFile("user "+ username +" call queue " + printer + " queue: " + printers.get(printer) + System.getProperty("line.separator"));
+            if(CheckUserPermission(username, "queue")){
+                fw.writeFile("user "+ username +" call queue " + printer + " queue: " + printers.get(printer) + System.getProperty("line.separator"));
+            }
         }
     }
 
@@ -143,16 +147,18 @@ public class PrinterServant extends UnicastRemoteObject implements IPrinterServa
     public void topQueue(String password, String username, String printer, int job) throws RemoteException, IndexOutOfBoundsException, InterruptedException {
         String tempJob = null;
         if (db.authenticateUser(password, username)) {
-            int printerIndex = Integer.parseInt(String.valueOf(printer.toCharArray()[printer.length() - 1]));
-            sem[printerIndex].acquire();
-            if (printers.get(printer).size() > job) {
-                tempJob = printers.get(printer).get(job);
-                printers.get(printer).remove(job);
-                printers.get(printer).add(0, tempJob);
-            } else {
-                System.out.println("Illegal argument");
+            if(CheckUserPermission(username, "topQueue")){
+                int printerIndex = Integer.parseInt(String.valueOf(printer.toCharArray()[printer.length() - 1]));
+                sem[printerIndex].acquire();
+                if (printers.get(printer).size() > job) {
+                    tempJob = printers.get(printer).get(job);
+                    printers.get(printer).remove(job);
+                    printers.get(printer).add(0, tempJob);
+                } else {
+                    System.out.println("Illegal argument");
+                }
+                sem[printerIndex].release();
             }
-            sem[printerIndex].release();
         }
     }
 
@@ -160,45 +166,50 @@ public class PrinterServant extends UnicastRemoteObject implements IPrinterServa
     public void start(String password, String username) throws RemoteException {
         //Authenticate client with password param
         if (db.authenticateUser(password, username)) {
-            initialisePrinters();
-            fw.setWriter();
-            executor = Executors.newFixedThreadPool(N_THREADS);
+            if(CheckUserPermission(username, "start")){
+                initialisePrinters();
+                fw.setWriter();
+                executor = Executors.newFixedThreadPool(N_THREADS);
         }
+    }
     }
 
     @Override
     public void stop(String password, String username) throws RemoteException {
         if (db.authenticateUser(password, username)) {
-            try {
-                executor.shutdown();
-                while (true) {
-                    if (executor.awaitTermination(5, TimeUnit.SECONDS)) {
-                        fw.cleanUp();
-                        executor.shutdownNow();
-                        break;
+            if(CheckUserPermission(username, "stop")){
+                try {
+                    executor.shutdown();
+                    while (true) {
+                        if (executor.awaitTermination(5, TimeUnit.SECONDS)) {
+                            fw.cleanUp();
+                            executor.shutdownNow();
+                            break;
+                        }
                     }
+                } catch (InterruptedException e) {
+                    System.out.println(e.getMessage());
                 }
-            } catch (InterruptedException e) {
-                System.out.println(e.getMessage());
             }
-        } else System.out.println("Session timeout\n Authenticate again");
-        System.out.println("Server Closed.");
+        } else System.out.println("Authenticate again");
     }
 
     @Override
-    public void restart(String password, String username) throws RemoteException {
-        stop(password, username);
-        start(password, username);
+    public void restart(String password, String username) throws RemoteException {  
+            stop(password, username);
+            start(password, username);
     }
 
     @Override
     public void status(String password, String username, String printer) throws RemoteException {
         if (db.authenticateUser(password, username)) {
-            int printerIndex = Integer.parseInt(String.valueOf(printer.toCharArray()[printer.length() - 1]));
-            if (getFlag(printerIndex)) {
-                fw.writeFile(printer + " is printing" + System.getProperty("line.separator"));
-            } else {
-                fw.writeFile(printer + " is not printing" + System.getProperty("line.separator"));
+            if(CheckUserPermission(username, "status")){
+                int printerIndex = Integer.parseInt(String.valueOf(printer.toCharArray()[printer.length() - 1]));
+                if (getFlag(printerIndex)) {
+                    fw.writeFile(printer + " is printing" + System.getProperty("line.separator"));
+                } else {
+                    fw.writeFile(printer + " is not printing" + System.getProperty("line.separator"));
+                }
             }
         }
     }
@@ -206,15 +217,19 @@ public class PrinterServant extends UnicastRemoteObject implements IPrinterServa
     @Override
     public void readConfig(String password, String username, String parameter) throws RemoteException {
         if (db.authenticateUser(password, username)) {
-            fw.writeFile(param.get(parameter) + System.getProperty("line.separator"));
+            if(CheckUserPermission(username, "readConfig")){
+                fw.writeFile(param.get(parameter) + System.getProperty("line.separator"));
         }
+    }
     }
 
     @Override
     public void setConfig(String password, String username, String parameter, String value) throws RemoteException {
         if (db.authenticateUser(password, username)) {
-            param.put(parameter, value);
-            fw.writeFile("user" + username+ " set config " + param.get(parameter) + System.getProperty("line.separator"));
+            if(CheckUserPermission(username, "setConfig")){
+                param.put(parameter, value);
+                fw.writeFile("user" + username+ " set config " + param.get(parameter) + System.getProperty("line.separator"));
+            }
         }
     }
 
