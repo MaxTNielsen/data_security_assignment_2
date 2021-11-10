@@ -1,9 +1,0 @@
-com\client\Client.class
-com\printer\IPrinterServant.class
-com\printer\PrinterServant$printerThreads.class
-com\printer\Cookie.class
-com\printer\IDB.class
-com\printer\PrinterServant.class
-com\printer\DB.class
-com\printer\FileWr.class
-com\printer\ApplicationServer.class
