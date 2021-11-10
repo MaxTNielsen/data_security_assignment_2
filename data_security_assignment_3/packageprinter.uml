@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Diagram>
+  <ID>JAVA</ID>
+  <OriginalElement>com.printer</OriginalElement>
+  <nodes>
+    <node x="688.5" y="948.0">com.printer.ApplicationServer</node>
+    <node x="300.00000000000006" y="514.0">com.printer.PrinterServant</node>
+    <node x="791.0" y="602.0">com.printer.DB</node>
+    <node x="678.3981481481483" y="0.0">com.printer.Cookie</node>
+    <node x="180.00000000000006" y="148.0">com.printer.IPrinterServant</node>
+    <node x="0.0" y="269.0">com.printer.PrinterServant.printerThreads</node>
+    <node x="618.0" y="192.0">com.printer.IDB</node>
+    <node x="440.00000000000006" y="247.0">com.printer.FileWr</node>
+  </nodes>
+  <notes />
+  <edges>
+    <edge source="com.printer.PrinterServant" target="com.printer.IPrinterServant">
+      <point x="-28.77777777777783" y="-192.0" />
+      <point x="400.72222222222223" y="464.0" />
+      <point x="299.50000000000006" y="464.0" />
+      <point x="0.0" y="148.0" />
+    </edge>
+    <edge source="com.printer.PrinterServant.printerThreads" target="com.printer.PrinterServant">
+      <point x="53.33333333333337" y="27.0" />
+      <point x="133.33333333333337" y="474.0" />
+      <point x="371.9444444444445" y="474.0" />
+      <point x="-57.55555555555554" y="-192.0" />
+    </edge>
+    <edge source="com.printer.DB" target="com.printer.IDB">
+      <point x="-86.66666666666669" y="-104.0" />
+      <point x="834.3333333333334" y="494.0" />
+      <point x="845.5" y="494.0" />
+      <point x="97.5" y="104.0" />
+    </edge>
+  </edges>
+  <settings layout="Hierarchic Group" zoom="0.6379647749510763" x="525.5" y="501.0" />
+  <SelectedNodes>
+    <node>com.printer.IPrinterServant</node>
+  </SelectedNodes>
+  <Categories>
+    <Category>Methods</Category>
+    <Category>Inner Classes</Category>
+  </Categories>
+  <SCOPE>All</SCOPE>
+  <VISIBILITY>private</VISIBILITY>
+</Diagram>
+
