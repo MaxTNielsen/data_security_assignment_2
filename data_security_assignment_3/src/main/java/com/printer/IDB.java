@@ -12,10 +12,4 @@ public interface IDB {
     void createNewDatabase();
 
     void createPasswordsTable();
-
-    void createCookieTable();
-
-    boolean authenticateCookie(Cookie c);
-
-    Cookie addCookieToDb();
 }

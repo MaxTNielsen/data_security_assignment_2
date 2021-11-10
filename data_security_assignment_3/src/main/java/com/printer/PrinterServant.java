@@ -2,7 +2,11 @@ package com.printer;
 
 import com.google.gson.Gson;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.io.IOException;
+import java.net.Socket;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.ArrayList;
@@ -14,9 +18,16 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 
+import com.google.gson.Gson;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
+
+import javax.annotation.processing.Filer;
+import javax.xml.crypto.dsig.keyinfo.KeyValue;
+
 public class PrinterServant extends UnicastRemoteObject implements IPrinterServant {
     private IDB db;
-    private Gson gson = new Gson();
     private static final long EXPIRE_TIME = 24 * 60 * 60 * 1000;
     private static final int N_THREADS = 5;
     private Map<String, ArrayList<String>> printers;
@@ -24,17 +35,46 @@ public class PrinterServant extends UnicastRemoteObject implements IPrinterServa
     private boolean[] busy = new boolean[N_THREADS];
     private ExecutorService executor;
     private FileWr fw;
-    private Map<String, String> cookie_user_map;
     private Semaphore[] sem = new Semaphore[]{new Semaphore(1),
             new Semaphore(1), new Semaphore(1), new Semaphore(1), new Semaphore(1)};
+    private FileReader fr;
+    private Map<String, ArrayList<String>> map;
+
 
     public PrinterServant(IDB db) throws IOException {
         super();
         this.db = db;
         this.fw = new FileWr();
-        cookie_user_map = new HashMap<>();
+        readFile();
     }
 
+    private void readFile(){
+        try {
+            JsonElement root = new JsonParser().parse(new FileReader("access_control_policy.json"));
+            JsonObject object = root.getAsJsonObject();
+            this.map = new Gson().fromJson(object.toString(), Map.class);
+
+            for(Map.Entry<String, ArrayList<String>> entry : map.entrySet()){
+                System.out.println(entry.getKey() + " value " + entry.getValue());
+            }
+
+        }
+         catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private boolean CheckUserPermission(String username, String op){
+        Gson gson = new Gson();
+        ArrayList<String> operation = map.get(op);
+        if(operation.contains(username))
+            return true;
+        return false;
+    }
+    
+    
     ArrayList<String> getPrinterJobs(String printer) {
         try {
             int printerIndex = Integer.parseInt(String.valueOf(printer.toCharArray()[printer.length() - 1]));
@@ -78,20 +118,11 @@ public class PrinterServant extends UnicastRemoteObject implements IPrinterServa
     }
 
     @Override
-    public boolean authenticateCookie(String cookie) throws RemoteException {
-        Cookie c = gson.fromJson(cookie, Cookie.class);
-        if (db.authenticateCookie(c)) {
-            return checkTimeStamp(c);
-        }
-        return false;
-    }
-
-    @Override
-    public void print(String filename, String printer, String cookie) throws RemoteException {
-        if (authenticateCookie(cookie)) {
+    public void print(String password, String username,String filename, String printer) throws RemoteException {
+        if (db.authenticateUser(password, username)) {
             int printerIndex = Integer.parseInt(String.valueOf(printer.toCharArray()[printer.length() - 1]));
-            Cookie c = gson.fromJson(cookie, Cookie.class);
-            fw.writeFile("user "+ cookie_user_map.get(c.getId())+" call print to printer " + printer+"\n");
+         
+            fw.writeFile("user "+ username+" call print to printer " + printer+"\n");
             if (getFlag(printerIndex)) {
                 getPrinterJobs(printer).add(filename);
             } else {
@@ -102,17 +133,16 @@ public class PrinterServant extends UnicastRemoteObject implements IPrinterServa
     }
 
     @Override
-    public void queue(String printer, String cookie) throws RemoteException {
-        if (authenticateCookie(cookie)) {
-            Cookie c = gson.fromJson(cookie, Cookie.class);
-            fw.writeFile("user "+ cookie_user_map.get(c.getId())+" call queue " + printer + " queue: " + printers.get(printer) + System.getProperty("line.separator"));
+    public void queue(String password, String username,String printer) throws RemoteException {
+        if (db.authenticateUser(password, username)) {
+            fw.writeFile("user "+ username +" call queue " + printer + " queue: " + printers.get(printer) + System.getProperty("line.separator"));
         }
     }
 
     @Override
-    public void topQueue(String printer, int job, String cookie) throws RemoteException, IndexOutOfBoundsException, InterruptedException {
+    public void topQueue(String password, String username, String printer, int job) throws RemoteException, IndexOutOfBoundsException, InterruptedException {
         String tempJob = null;
-        if (authenticateCookie(cookie)) {
+        if (db.authenticateUser(password, username)) {
             int printerIndex = Integer.parseInt(String.valueOf(printer.toCharArray()[printer.length() - 1]));
             sem[printerIndex].acquire();
             if (printers.get(printer).size() > job) {
@@ -127,36 +157,18 @@ public class PrinterServant extends UnicastRemoteObject implements IPrinterServa
     }
 
     @Override
-    public String start(String password, String username) throws RemoteException {
+    public void start(String password, String username) throws RemoteException {
         //Authenticate client with password param
-        Cookie c = null;
         if (db.authenticateUser(password, username)) {
             initialisePrinters();
             fw.setWriter();
             executor = Executors.newFixedThreadPool(N_THREADS);
-            c = db.addCookieToDb();
-            cookie_user_map.put(c.getId(), username);
-        } else {
-            return gson.toJson(c);
         }
-        return gson.toJson(c);
-    }
-
-    public String start(String cookie) throws RemoteException {
-        //Authenticate client with password param
-        if (db.authenticateCookie(gson.fromJson(cookie, Cookie.class))) {
-            initialisePrinters();
-            fw.setWriter();
-            executor = Executors.newFixedThreadPool(N_THREADS);
-        } else {
-            return gson.toJson(cookie);
-        }
-        return gson.toJson(cookie);
     }
 
     @Override
-    public void stop(String cookie) throws RemoteException {
-        if (authenticateCookie(cookie)) {
+    public void stop(String password, String username) throws RemoteException {
+        if (db.authenticateUser(password, username)) {
             try {
                 executor.shutdown();
                 while (true) {
@@ -174,14 +186,14 @@ public class PrinterServant extends UnicastRemoteObject implements IPrinterServa
     }
 
     @Override
-    public void restart(String cookie) throws RemoteException {
-        stop(cookie);
-        start(cookie);
+    public void restart(String password, String username) throws RemoteException {
+        stop(password, username);
+        start(password, username);
     }
 
     @Override
-    public void status(String printer, String cookie) throws RemoteException {
-        if (authenticateCookie(cookie)) {
+    public void status(String password, String username, String printer) throws RemoteException {
+        if (db.authenticateUser(password, username)) {
             int printerIndex = Integer.parseInt(String.valueOf(printer.toCharArray()[printer.length() - 1]));
             if (getFlag(printerIndex)) {
                 fw.writeFile(printer + " is printing" + System.getProperty("line.separator"));
@@ -192,25 +204,18 @@ public class PrinterServant extends UnicastRemoteObject implements IPrinterServa
     }
 
     @Override
-    public void readConfig(String parameter, String cookie) throws RemoteException {
-        if (authenticateCookie(cookie)) {
+    public void readConfig(String password, String username, String parameter) throws RemoteException {
+        if (db.authenticateUser(password, username)) {
             fw.writeFile(param.get(parameter) + System.getProperty("line.separator"));
         }
     }
 
     @Override
-    public void setConfig(String parameter, String value, String cookie) throws RemoteException {
-        if (authenticateCookie(cookie)) {
-            Cookie c = gson.fromJson(cookie, Cookie.class);
+    public void setConfig(String password, String username, String parameter, String value) throws RemoteException {
+        if (db.authenticateUser(password, username)) {
             param.put(parameter, value);
-            fw.writeFile("user" + cookie_user_map.get(c.getId())+ " set config " + param.get(parameter) + System.getProperty("line.separator"));
+            fw.writeFile("user" + username+ " set config " + param.get(parameter) + System.getProperty("line.separator"));
         }
-    }
-
-    @Override
-    public boolean checkTimeStamp(Cookie c) throws RemoteException {
-        long current = System.currentTimeMillis();
-        return current - c.getTimestamp() <= EXPIRE_TIME;
     }
 
     private class printerThreads extends Thread {

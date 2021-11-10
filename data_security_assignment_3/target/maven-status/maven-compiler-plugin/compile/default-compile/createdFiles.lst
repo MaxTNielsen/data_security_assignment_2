@@ -1,4 +1,4 @@
-com\client\Client.class
+client\Client.class
 com\printer\IPrinterServant.class
 com\printer\PrinterServant$printerThreads.class
 com\printer\Cookie.class
