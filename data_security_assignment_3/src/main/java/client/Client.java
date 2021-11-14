@@ -17,28 +17,24 @@ public class Client {
 
         String pass1 = "hello1";
         String pass1_sha = DigestUtils.sha256Hex(pass1);
-        Cookie cookie = gson.fromJson(printer.start(pass1_sha, "user1"), Cookie.class);
-        printer.print("file1", "printer0", gson.toJson(cookie));
-        printer.print("file2", "printer1", gson.toJson(cookie));
-        printer.queue("printer0",gson.toJson(cookie));
-        printer.print("file3", "printer0", gson.toJson(cookie));
-        printer.topQueue("printer0", 1, gson.toJson(cookie));
-        printer.queue("printer0",gson.toJson(cookie));
-        printer.print("file4", "printer1", gson.toJson(cookie));
-        printer.restart(gson.toJson(cookie));
-        printer.print("file2", "printer2", gson.toJson(cookie));
-        printer.print("file4", "printer4", gson.toJson(cookie));
-        printer.print("file7", "printer2", gson.toJson(cookie));
-        printer.setConfig("Margin", "0,5", gson.toJson(cookie));
-        printer.readConfig("Margin",gson.toJson(cookie));
-        printer.status("printer2", gson.toJson(cookie));
-        printer.stop(gson.toJson(cookie));
+        printer.print(pass1, "user1","file1", "printer0");
+        printer.print(pass1, "user1","file2", "printer1");
+        printer.queue(pass1, "user1","printer0");
+        printer.topQueue(pass1, "user1","printer0", 1);
+        printer.queue(pass1, "user1","printer0");
+        printer.print(pass1, "user1","file4", "printer1");
+        printer.restart(pass1, "user1");
+        printer.print(pass1, "user1","file2", "printer2");
+        printer.print(pass1, "user1","file4", "printer4");
+        printer.print(pass1, "user1","file7", "printer2");
+        printer.setConfig(pass1, "user1", "Margin", "0,5");
+        printer.readConfig(pass1, "user1", "Margin");
+        printer.status(pass1, "user1","printer2");
+        printer.stop(pass1, "user1");
 
         String pass2 = "hello2";
         String pass2_sha = DigestUtils.sha256Hex(pass2);
-        Cookie cookie2 = gson.fromJson(printer.start(pass2_sha, "user2"), Cookie.class);
-        printer.print("file2", "printer1", gson.toJson(cookie2));
-        printer.stop(gson.toJson(cookie2));
-
+        printer.print(pass2, "user1","file2", "printer1");
+        printer.stop(pass2, "user1");
     }
 }

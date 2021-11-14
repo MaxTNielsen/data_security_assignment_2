@@ -5,27 +5,23 @@ import java.rmi.RemoteException;
 
 public interface IPrinterServant extends Remote {
 
-    void print(String filename, String printer, String cookie) throws RemoteException;
+    void print(String password, String username,String filename, String printer) throws RemoteException;
 
-    void queue(String printer, String cookie) throws RemoteException;
+    void queue(String password, String username, String printer) throws RemoteException;
 
-    void topQueue(String printer, int job, String cookie) throws RemoteException, InterruptedException;
+    void topQueue(String password, String username, String printer, int job) throws RemoteException, InterruptedException;
 
-    String start(String password, String username) throws RemoteException;
+    void start(String password, String username) throws RemoteException;
 
-    void stop(String cookie) throws RemoteException, InterruptedException;
+    void stop(String password, String username) throws RemoteException, InterruptedException;
 
-    void restart(String cookie) throws RemoteException;
+    void restart(String password, String username) throws RemoteException;
 
-    void status(String printer, String cookie) throws RemoteException;
+    void status(String password, String username, String printer) throws RemoteException;
 
-    void readConfig(String parameter, String cookie) throws RemoteException;
+    void readConfig(String password, String username, String parameter) throws RemoteException;
 
-    void setConfig(String parameter, String value, String cookie) throws RemoteException;
-
-    boolean checkTimeStamp(Cookie c) throws RemoteException;
-
-    boolean authenticateCookie(String cookie) throws RemoteException;
-
+    void setConfig(String password, String username, String parameter, String value) throws RemoteException;
+    
     void initialisePrinters() throws RemoteException;
 }
