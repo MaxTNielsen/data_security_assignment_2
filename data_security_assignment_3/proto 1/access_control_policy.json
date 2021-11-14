@@ -1,11 +1,11 @@
 {
-	"print":["alice","cecilia","david","erica","fred","george"],
-	"queue":["alice","cecilia","david","erica","fred","george"],
-	"topQueue":["alice","cecilia"],
-	"start":["alice","bob"],
-	"stop":["alice","bob"],
-	"restart":["alice","bob","cecilia"],
-	"status":["alice","bob"],
-	"readConfig":["alice","bob"],
-	"setConfig":["alice","bob"]
+	"print":["alice","cecilia","david","erica","fred","George", "Henry", "Ida"],
+	"queue":["alice","cecilia","david","erica","fred","George", "Henry", "Ida"],
+	"topQueue":["alice","cecilia", "Ida"],
+	"start":["alice","George"],
+	"stop":["alice","George"],
+	"restart":["alice","George","cecilia", "Ida"],
+	"status":["alice","George"],
+	"readConfig":["alice","George"],
+	"setConfig":["alice","George"]
 }

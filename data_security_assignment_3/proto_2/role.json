@@ -1,9 +1,10 @@
 {
     "Alice":"Boss",
-    "Bob": "Technician",
+    "George": "Technician",
     "Cecilia" : "Power user",
+    "Ida" : "Power user",
     "David": "Ordinary users",
     "Erica": "Ordinary users",
     "Fred": "Ordinary users",
-    "George": "Ordinary users"
+    "Henry":"Ordinary users"
 }
