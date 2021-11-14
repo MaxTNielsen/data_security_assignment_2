@@ -15,26 +15,37 @@ public class Client {
     public static void main(String args[]) throws NotBoundException, IOException, InterruptedException {
         IPrinterServant printer = (IPrinterServant) Naming.lookup("rmi://localhost:5099/printer");
 
-        String pass1 = "hello1";
-        String pass1_sha = DigestUtils.sha256Hex(pass1);
-        printer.print(pass1, "user1","file1", "printer0");
-        printer.print(pass1, "user1","file2", "printer1");
-        printer.queue(pass1, "user1","printer0");
-        printer.topQueue(pass1, "user1","printer0", 1);
-        printer.queue(pass1, "user1","printer0");
-        printer.print(pass1, "user1","file4", "printer1");
-        printer.restart(pass1, "user1");
-        printer.print(pass1, "user1","file2", "printer2");
-        printer.print(pass1, "user1","file4", "printer4");
-        printer.print(pass1, "user1","file7", "printer2");
-        printer.setConfig(pass1, "user1", "Margin", "0,5");
-        printer.readConfig(pass1, "user1", "Margin");
-        printer.status(pass1, "user1","printer2");
-        printer.stop(pass1, "user1");
+        String user_1 = "Bob";
+        String pass_1 = "pass_1";
+        pass_1 = DigestUtils.sha256Hex(pass_1);
+        printer.start(pass_1, user_1);
+        printer.setConfig(pass_1, user_1, "Margin", "0,5");
+        printer.readConfig(pass_1, user_1, "Margin");
+        printer.status(pass_1, user_1,"printer2");
+        printer.stop(pass_1, user_1);
+        printer.start(pass_1, user_1);
 
-        String pass2 = "hello2";
-        String pass2_sha = DigestUtils.sha256Hex(pass2);
-        printer.print(pass2, "user1","file2", "printer1");
-        printer.stop(pass2, "user1");
+        String user_2 = "Cecilia";
+        String pass_2 = "pass_2";
+        pass_2 = DigestUtils.sha256Hex(pass_2);
+        printer.print(pass_2, user_2,"file1", "printer0");
+        printer.print(pass_2, user_2,"file2", "printer1");
+        printer.queue(pass_2, user_2,"printer0");
+        printer.topQueue(pass_2, user_2,"printer0", 1);
+        printer.queue(pass_2, user_2,"printer0");
+        printer.print(pass_2, user_2,"file4", "printer1");
+        printer.restart(pass_2, user_2);
+        printer.print(pass_2, user_2,"file2", "printer2");
+        printer.print(pass_2, user_2,"file4", "printer4");
+        printer.print(pass_2, user_2,"file7", "printer2");
+        printer.readConfig(pass_2, user_2, "Margin");
+        
+        String user_3 = "David";
+        String pass_3 = "pass_3";
+        pass_3 = DigestUtils.sha256Hex(pass_3);
+        // String pass2_sha = DigestUtils.sha256Hex(pass2);
+        printer.print(pass_3, user_3,"file2", "printer1");
+        printer.queue(pass_3, user_2,"printer0");
+        printer.stop(pass_3, user_3);
     }
 }

@@ -9,13 +9,16 @@ public class DB implements IDB {
     private static final String dbUrl = "jdbc:sqlite:C:/sqlite/db/printerDB.db";
 
     // private static final String dbUrl = "jdbc:sqlite:/Users/lkj/Downloads/sqlite-tools-osx-x86-3360000/db/printerDB.db";
+    // private static final String dbUrl = "jdbc:sqlite:/home/lkj/sqlite-tools-linux-x86-3360000/sqlite-tools-linux-x86-3360000/db/printerDB.db";
+    
     public DB() {
         createNewDatabase();
 
         createPasswordsTable();
 
-        addPasswordToDb("user1", "hello1");
-        addPasswordToDb("user2", "hello2");
+        addPasswordToDb("Bob", "pass_1");
+        addPasswordToDb("Cecilia", "pass_2");
+        addPasswordToDb("David", "pass_3");
     }
 
     @Override

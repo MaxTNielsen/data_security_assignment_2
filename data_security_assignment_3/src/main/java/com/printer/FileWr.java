@@ -9,12 +9,12 @@ public class FileWr {
     FileWriter writer;
 
     public FileWr() {
-        file = new File("log.txt");
+        file = new File("data_security_assignment_3/proto_2/log.txt");
     }
 
     public void setWriter() {
         try {
-            this.writer = new FileWriter("log.txt", true);
+            this.writer = new FileWriter("data_security_assignment_3/proto_2/log.txt", true);
         } catch (IOException e) {
             System.out.println(e.getMessage());
         }

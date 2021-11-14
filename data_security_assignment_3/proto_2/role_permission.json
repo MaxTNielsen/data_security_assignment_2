@@ -1,0 +1,6 @@
+{
+    "Boss" : ["print", "queue", "topQueue", "start", "stop", "restart", "status", "readConfig", "setConfig"],
+    "Technician": ["start", "stop", "restart", "status", "readConfig", "setConfig"],
+    "Power user": ["print", "queue", "topQueue", "restart"],
+    "Ordinary users" : ["print", "queue"]
+}
