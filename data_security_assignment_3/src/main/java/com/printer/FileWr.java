@@ -9,12 +9,14 @@ public class FileWr {
     FileWriter writer;
 
     public FileWr() {
-        file = new File("data_security_assignment_3/proto_2/log.txt");
+        file = new File("C:/Users/tuetr_d2rngny/git_repos/data_security_repos/data_security_assignment_3/proto_1/log.txt");
+        System.out.println("printing in filewriter constructor");
     }
 
     public void setWriter() {
         try {
-            this.writer = new FileWriter("data_security_assignment_3/proto_2/log.txt", true);
+            this.writer = new FileWriter("C:/Users/tuetr_d2rngny/git_repos/data_security_repos/data_security_assignment_3/proto_1/log.txt", true);
+            System.out.println("printing in filewriter setWriter");
         } catch (IOException e) {
             System.out.println(e.getMessage());
         }
@@ -23,6 +25,7 @@ public class FileWr {
     synchronized void writeFile(String content) {
         try {
             writer.write(content);
+            System.out.println("printing" + content + "in filewriter writeFile");
             writer.flush();
         } catch (IOException e) {
             System.out.println(e.getMessage());

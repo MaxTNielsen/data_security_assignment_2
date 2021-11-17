@@ -17,8 +17,10 @@ public class DB implements IDB {
         createPasswordsTable();
 
         addPasswordToDb("Bob", "pass_1");
+        addPasswordToDb("George", "pass_4");
         addPasswordToDb("Cecilia", "pass_2");
         addPasswordToDb("David", "pass_3");
+        addPasswordToDb("Henry", "pass_5");
     }
 
     @Override

@@ -1,0 +1,14 @@
+Username: George Operation: start
+userGeorge set config 0,5
+Username: George Operation: readConfig 0,5
+printer2 is not printing
+Username: George Operation: start
+Username Cecilia Operation: print printer0
+Username: Cecilia Operation: queue Printer: printer0 Queue: [file1]
+Username: Cecilia Operation: topQueue
+Username: Cecilia Operation: queue Printer: printer0 Queue: [file1]
+Username Cecilia Operation: print printer2
+Username Henry Operation: print printer1
+file1
+file2
+file2

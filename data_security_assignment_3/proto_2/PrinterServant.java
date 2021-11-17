@@ -38,7 +38,10 @@ public class PrinterServant extends UnicastRemoteObject implements IPrinterServa
     private Semaphore[] sem = new Semaphore[]{new Semaphore(1),
             new Semaphore(1), new Semaphore(1), new Semaphore(1), new Semaphore(1)};
     private FileReader fr;
-    private Map<String, ArrayList<String>> map;
+
+    private Map<String, String> role;
+    private Map<String, ArrayList<String>> role_perm;
+
 
 
     public PrinterServant(IDB db) throws IOException {
@@ -50,16 +53,24 @@ public class PrinterServant extends UnicastRemoteObject implements IPrinterServa
 
     private void readFile(){
         try {
-            FileReader fr = new FileReader("access_control_policy.json");
+            FileReader fr = new FileReader("C:/Users/tuetr_d2rngny/git_repos/data_security_repos/data_security_assignment_3/proto_2/role.json");
             JsonElement root = new JsonParser().parse(fr);
             fr.close();
             JsonObject object = root.getAsJsonObject();
-            this.map = new Gson().fromJson(object.toString(), Map.class);
+            this.role = new Gson().fromJson(object.toString(), Map.class);
 
-            for(Map.Entry<String, ArrayList<String>> entry : map.entrySet()){
+            for(Map.Entry<String, String> entry : role.entrySet()){
                 System.out.println(entry.getKey() + " value " + entry.getValue());
             }
 
+            fr = new FileReader("C:/Users/tuetr_d2rngny/git_repos/data_security_repos/data_security_assignment_3/proto_2/role_permission.json");
+            root = new JsonParser().parse(fr);
+            fr.close();
+            object = root.getAsJsonObject();
+            this.role_perm = new Gson().fromJson(object.toString(), Map.class);
+            for(Map.Entry<String, ArrayList<String>> entry : role_perm.entrySet()){
+                System.out.println(entry.getKey() + " value " + entry.getValue());
+            }
         }
          catch (FileNotFoundException e) {
             e.printStackTrace();
@@ -69,9 +80,14 @@ public class PrinterServant extends UnicastRemoteObject implements IPrinterServa
     }
 
     private boolean CheckUserPermission(String username, String op){
-        ArrayList<String> operation = map.get(op);
-        if(operation.contains(username))
+        String role = this.role.get(username);
+        if(role_perm.get(role).contains(op))
+        {
+            // System.out.println("user " + username + "do " + op);
             return true;
+
+        }
+        System.out.println("user " + username + "cannot do " + op);
         return false;
     }
     
@@ -122,7 +138,6 @@ public class PrinterServant extends UnicastRemoteObject implements IPrinterServa
         if (db.authenticateUser(password, username)) {
             if(CheckUserPermission(username, "print")){    
                 int printerIndex = Integer.parseInt(String.valueOf(printer.toCharArray()[printer.length() - 1]));
-                
                 fw.writeFile("user "+ username+" call print to printer " + printer+"\n");
                 if (getFlag(printerIndex)) {
                     getPrinterJobs(printer).add(filename);
@@ -191,7 +206,14 @@ public class PrinterServant extends UnicastRemoteObject implements IPrinterServa
                     System.out.println(e.getMessage());
                 }
             }
-        } else System.out.println("Authenticate again");
+        }
+        else
+        {
+            // System.out.println("password: " + password);
+            // System.out.println("username: " + username);
+            
+            System.out.println("Authenticate again");
+        }
     }
 
     @Override
